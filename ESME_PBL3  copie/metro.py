@@ -6,14 +6,14 @@ from collections import deque
 def normalize(text):
   text=text.strip().lower() #remove space at biginnig and end + minuscule 
   accents={
-    'à':'a','â':'a','á':'a',
-    'é':'e','è':'e','ê':'e','ë':'e',
-    'î':'i','ï':'i','ì':'i','í':'i',
-    'ô': 'o', 'ö': 'o', 'ó': 'o',
-    'ù': 'u', 'û': 'u', 'ú': 'u', 'ü': 'u',
-    'ç': 'c', 'ñ': 'n'
+	  'à':'a','â':'a','á':'a',
+	  'é':'e','è':'e','ê':'e','ë':'e',
+	  'î':'i','ï':'i','ì':'i','í':'i',
+	  'ô': 'o', 'ö': 'o', 'ó': 'o',
+	  'ù': 'u', 'û': 'u', 'ú': 'u', 'ü': 'u',
+	  'ç': 'c', 'ñ': 'n'
   }
-  return "".join(accents.get(c,c) for c in text #parcours the text and replace it with the version without accent
+  return "".join(accents.get(c,c) for c in text) #parcours the text and replace it with the version without accent
   #without join, we would have a list
 
 # LOAD DATA
@@ -239,14 +239,14 @@ if __name__ == "__main__":
 
  
 
-        # DFS 
+# DFS 
 
         visited = dfs(graph, start) #explores reachabl stations
 
         print("\nDFS") 
         print("Reachable stations:", len(visited)) #display number of reachable stations
 
-        # DIJKSTRA  
+# DIJKSTRA  
 
         distances, previous, previous_line = dijkstra(graph, start, end) #finds fastest route
         path = get_path(previous, previous_line, start, end)#rebuilt path
@@ -258,57 +258,55 @@ if __name__ == "__main__":
             continue 
 
 #Build Segments
-segments = []  # All journey segments, one per metro line
-current_line = path[1][1] if len(path) > 1 else path[0][1]  # First line used
-segment = [path[0][0]]  # Start segment with departure station
+        segments = []  # All journey segments, one per metro line
+        current_line = path[1][1] if len(path) > 1 else path[0][1]  # First line used
+        segment = [path[0][0]]  # Start segment with departure station
 
-for i in range(1, len(path)):  # Loop through each station in the path
-    station, line = path[i]  # Unpack station and its line
+        for i in range(1, len(path)):  # Loop through each station in the path
+            station, line = path[i]  # Unpack station and its line
 
-    if line == current_line or line is None:  # Still on the same line
-        segment.append(station)  # Add to current segment
-    else:  # Line change detected
-        segments.append((current_line, segment))  # Save completed segment
-        current_line = line  # Switch to new line
-        segment = [path[i - 1][0], station]  # New segment starts from last station
+            if line == current_line or line is None:  # Still on the same line
+                segment.append(station)  # Add to current segment
+            else:  # Line change detected
+                segments.append((current_line, segment))  # Save completed segment
+                current_line = line  # Switch to new line
+                segment = [path[i - 1][0], station]  # New segment starts from last station
 
-segments.append((current_line, segment))
+        segments.append((current_line, segment))
 
 #Display
-first_line, first_segment = segments[0] #gets first segment
+        first_line, first_segment = segments[0] #gets first segment
 
-print(f"Board at {first_segment[0]} station, line {first_line}") #displays where to board 
+        print(f"Board at {first_segment[0]} station, line {first_line}") #displays where to board 
 
-for i, (line, stations) in enumerate(segments): #loops through each segment
+        for i, (line, stations) in enumerate(segments): #loops through each segment
 
-    for s in stations[1:-1]: 
-        print(f"Continue through {s} station") #displays intermediate stations
+            for s in stations[1:-1]: 
+                print(f"Continue through {s} station") #displays intermediate stations
 
-    if i < len(segments) - 1: #checks if tranfer is needed
-        transfer_station = stations[-1] 
-        next_line = segments[i + 1][0] 
+            if i < len(segments) - 1: #checks if tranfer is needed
+                transfer_station = stations[-1] 
+                next_line = segments[i + 1][0] 
 
-        print( 
-            f"Transfer at {transfer_station} station, " 
-            f"take line {next_line}" 
-        ) #displays transfer instructions
+                print( 
+            		f"Transfer at {transfer_station} station, " 
+            		f"take line {next_line}" 
+        		) #displays transfer instructions
 
-    last_line, last_segment = segments[-1] #gets last segment
+            last_line, last_segment = segments[-1] #gets last segment
 
-    print( 
-        f"Alight at {last_segment[-1]} station, " 
-        f"line {last_line}" 
-        ) #displays arrival station
+            print( 
+        		f"Alight at {last_segment[-1]} station, " 
+        		f"line {last_line}" 
+        		) #displays arrival station
 
-    minutes = distances[end] // 60 #converts time to minutes
-    seconds = distances[end] % 60 #keeps the remaining time in seconds
+        minutes = distances[end] // 60 #converts time to minutes
+        seconds = distances[end] % 60 #keeps the remaining time in seconds
 
-    print(f"\nEstimated total time: {minutes} minutes {seconds} seconds") #print total time
+        print(f"\nEstimated total time: {minutes} minutes {seconds} seconds") #print total time
 
- 
+        again = input("\nDo you want to do another reaserch ? (yes/no) : ").strip().lower() #asks the user if he wants another research 
 
-    again = input("\nDo you want to do another reaserch ? (yes/no) : ").strip().lower() #asks the user if he wants another research 
-
-    if again not in ("yes"): #if not yes stops the program
-        print("Good bye!") 
-        break 
+        if again not in ("yes"): #if not yes stops the program
+            print("Good bye!") 
+            break 
