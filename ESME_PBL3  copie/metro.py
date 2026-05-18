@@ -157,3 +157,39 @@ def get_path(previous, previous_line, start, end):
         path[0] = (path[0][0], path[1][1]) 
 
     return path 
+#MAIN
+
+if __name__ == "__main__":
+
+    while True: #loop that continues until the user quit
+
+        print("\n===== METRO ROUTE PLANNER =====")
+
+        city = input("Choose city (paris, lyon, lille, bordeaux): ").lower()
+
+        data = load_data(city)
+
+        if data is None:
+            continue #if the file is not found, skip to the next iteration
+
+        lignes, connexions, correspondances, temps_moyen = data #unpack the data into 4 variables
+
+        graph = build_graph(lignes, connexions, correspondances, temps_moyen) #build the graph from the loaded data
+
+        print("\nTransfer stations:")
+        for c in correspondances: #Loop through all transfer stations and display them
+            print("-", c["station"])
+
+		#dictionary mapping normalized station names to their real names
+        #allows the user to type without accents or majuscule
+        station_map = {normalize(s): s for s in graph}
+
+        start_input = normalize(input("\nDeparture station: ")) #ask departure station and normalize the input
+        end_input = normalize(input("Arrival station: ")) #same for the arrival
+
+        start = station_map.get(start_input) #find the real station name from the normalized input
+        end = station_map.get(end_input) #same for the arrival
+
+        if start is None or end is None: #if one of the station is not find in the graph 
+            print("Invalid station")
+            continue #ask again
