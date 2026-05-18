@@ -225,6 +225,38 @@ if __name__ == "__main__":
         if start is None or end is None: #if one of the station is not find in the graph 
             print("Invalid station")
             continue #ask again
+
+ # BFS 
+
+        bfs_path = bfs_shortest_path(graph, start, end)  #finds the path with the fewest stations
+
+        print("\nFEWEST STOPS (BFS)") 
+
+        for station, line in bfs_path: #display the station and metro line
+            print(f"-> {station}" + (f" (line {line})" if line else "")) 
+
+        print(f"\nStops: {len(bfs_path) - 1}") #dis^lay number of stops
+
+ 
+
+        # DFS 
+
+        visited = dfs(graph, start) #explores reachabl stations
+
+        print("\nDFS") 
+        print("Reachable stations:", len(visited)) #display number of reachable stations
+
+        # DIJKSTRA  
+
+        distances, previous, previous_line = dijkstra(graph, start, end) #finds fastest route
+        path = get_path(previous, previous_line, start, end)#rebuilt path
+
+        print("\nFASTEST PATH\n") 
+		
+        if not path: #checks if there is a path
+            print("No path found") 
+            continue 
+
 #Build Segments
 segments = []  # All journey segments, one per metro line
 current_line = path[1][1] if len(path) > 1 else path[0][1]  # First line used
@@ -241,3 +273,42 @@ for i in range(1, len(path)):  # Loop through each station in the path
         segment = [path[i - 1][0], station]  # New segment starts from last station
 
 segments.append((current_line, segment))
+
+#Display
+first_line, first_segment = segments[0] #gets first segment
+
+print(f"Board at {first_segment[0]} station, line {first_line}") #displays where to board 
+
+for i, (line, stations) in enumerate(segments): #loops through each segment
+
+    for s in stations[1:-1]: 
+        print(f"Continue through {s} station") #displays intermediate stations
+
+    if i < len(segments) - 1: #checks if tranfer is needed
+        transfer_station = stations[-1] 
+        next_line = segments[i + 1][0] 
+
+        print( 
+            f"Transfer at {transfer_station} station, " 
+            f"take line {next_line}" 
+        ) #displays transfer instructions
+
+    last_line, last_segment = segments[-1] #gets last segment
+
+    print( 
+        f"Alight at {last_segment[-1]} station, " 
+        f"line {last_line}" 
+        ) #displays arrival station
+
+    minutes = distances[end] // 60 #converts time to minutes
+    seconds = distances[end] % 60 #keeps the remaining time in seconds
+
+    print(f"\nEstimated total time: {minutes} minutes {seconds} seconds") #print total time
+
+ 
+
+    again = input("\nDo you want to do another reaserch ? (yes/no) : ").strip().lower() #asks the user if he wants another research 
+
+    if again not in ("yes"): #if not yes stops the program
+        print("Good bye!") 
+        break 
