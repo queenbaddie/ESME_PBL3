@@ -235,7 +235,7 @@ if __name__ == "__main__":
         for station, line in bfs_path: #display the station and metro line
             print(f"-> {station}" + (f" (line {line})" if line else "")) 
 
-        print(f"\nStops: {len(bfs_path) - 1}") #dis^lay number of stops
+        print(f"\nStops: {len(bfs_path) - 1}") #display number of stops
 
  
 
