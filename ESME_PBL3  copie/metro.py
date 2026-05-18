@@ -1,4 +1,5 @@
 import json
+import heapq 
 
 #Nomalize to have no accent
 def normalize(text):
@@ -12,8 +13,32 @@ def normalize(text):
     'ç': 'c', 'ñ': 'n'
   }
   return "".join(accents.get(c,c) for c in text #parcours the text and replace it with the version without accent
-  #without join, we would have a listé
+  #without join, we would have a list
 
+# LOAD DATA
+def load_data(city_name): 
+    
+    # Construct the file path based on the chosen city name
+    file_path = f"data/{city_name}.json" 
+ 
+    try: 
+        # Attempt to open the JSON file in read mode with UTF-8 encoding
+        with open(file_path, "r", encoding="utf-8") as file: 
+            # Parse the JSON file and store its contents in the 'data' variable
+            data = json.load(file) 
+ 
+    except FileNotFoundError: 
+        # If the specific city JSON file does not exist, print an error and stop
+        print("File not found") 
+        return None 
+ 
+    # Return the extracted information as a tuple to be used later in the script
+    return ( 
+        data["lignes"], 
+        data["connexions"], 
+        data["correspondances"], 
+        data["temps_moyen"] 
+    )
 
 
 #BUILD GRAPH 
@@ -62,10 +87,58 @@ def build_graph(lignes, connexions, correspondances, temps_moyen):
     return graph 
 
 
+# DIJKSTRA
 
 
-
-
+def dijkstra(graph, start, end): 
+ 
+    # Initialize a priority queue with the starting node and a distance of 0
+    queue = [(0, start)] 
+ 
+    # Set the initial distance to all nodes to infinity
+    distances = {node: float("inf") for node in graph} 
+    distances[start] = 0 
+ 
+    # Track the previous node to reconstruct the path later
+    previous = {node: None for node in graph} 
+    # Track the line used to reach the node to calculate transfer penalties
+    previous_line = {node: None for node in graph} 
+ 
+    # Continue until there are no more nodes to evaluate in the queue
+    while queue: 
+ 
+        # Pop the node with the shortest known distance from the priority queue
+        current_distance, current_node = heapq.heappop(queue) 
+ 
+        # If we have reached the destination, we can stop searching to save time
+        if current_node == end: 
+            break 
+ 
+        # Iterate through all adjacent stations (neighbors)
+        for neighbor, weight, line in graph[current_node]: 
+ 
+            transfer_cost = 0 
+ 
+            # Apply a time penalty (120 seconds) if the passenger needs to change lines
+            if previous_line[current_node] is not None and line != previous_line[current_node]: 
+                transfer_cost = 120 
+ 
+            # Calculate the total time to reach the neighbor through the current node
+            new_dist = current_distance + weight + transfer_cost 
+ 
+            # If this new path is faster than any previously found path to this neighbor
+            if new_dist < distances[neighbor]: 
+ 
+                # Update the shortest distance and how we got there
+                distances[neighbor] = new_dist 
+                previous[neighbor] = current_node 
+                previous_line[neighbor] = line 
+ 
+                # Add the neighbor and its new distance to the priority queue
+                heapq.heappush(queue, (new_dist, neighbor)) 
+ 
+    # Return the dictionaries needed to trace the fastest route back to the start
+    return distances, previous, previous_line
 
 #REBUILD PATH 
 
