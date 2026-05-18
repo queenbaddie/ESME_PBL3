@@ -1,5 +1,6 @@
 import json
-import heapq 
+import heapq
+from collections import deque 
 
 #Nomalize to have no accent
 def normalize(text):
@@ -84,7 +85,38 @@ def build_graph(lignes, connexions, correspondances, temps_moyen):
         station = corr["station"] 
         if station not in graph: 
             graph[station] = [] 
-    return graph 
+    return graph
+#BFS
+def bfs_shortest_path(graph, start, end):
+    visited = set()  # Tracks stations already fully explored
+    queue = deque([(start, [(start, None)])])  # Each entry: (current station, path taken so far)
+
+    while queue:  # Keep exploring until no stations remain
+        current, path = queue.popleft()  # Process the station that was added first (FIFO)
+
+        if current == end:  # Destination reached: BFS guarantees this is the shortest path
+            return path
+
+        if current not in visited:  # Skip if already explored from a shorter path
+            visited.add(current)  # Mark as explored before queuing neighbors
+
+            for neighbor, weight, line in graph[current]:  # Iterate over adjacent stations
+                if neighbor not in visited:  # Avoid re-queuing already explored stations
+                    queue.append((neighbor, path + [(neighbor, line)]))  # Extend path with the metro line used
+
+    return []
+#DFS
+def dfs(graph, start, visited=None):
+    if visited is None:  # Avoid mutable default argument bug: create a fresh set on first call
+        visited = set()
+
+    visited.add(start)  # Mark current station as visited before exploring neighbors
+
+    for neighbor, weight, line in graph[start]:  # Check all stations directly connected to current
+        if neighbor not in visited:  # Only recurse into unvisited stations
+            dfs(graph, neighbor, visited)  # Recursive call: go deeper into the graph
+
+    return visited  # Return the full set of stations reachable from start
 
 
 # DIJKSTRA
@@ -193,3 +225,19 @@ if __name__ == "__main__":
         if start is None or end is None: #if one of the station is not find in the graph 
             print("Invalid station")
             continue #ask again
+#Build Segments
+segments = []  # All journey segments, one per metro line
+current_line = path[1][1] if len(path) > 1 else path[0][1]  # First line used
+segment = [path[0][0]]  # Start segment with departure station
+
+for i in range(1, len(path)):  # Loop through each station in the path
+    station, line = path[i]  # Unpack station and its line
+
+    if line == current_line or line is None:  # Still on the same line
+        segment.append(station)  # Add to current segment
+    else:  # Line change detected
+        segments.append((current_line, segment))  # Save completed segment
+        current_line = line  # Switch to new line
+        segment = [path[i - 1][0], station]  # New segment starts from last station
+
+segments.append((current_line, segment))
